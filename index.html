@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio-Based Pomodoro Timer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="timer-container">
+        <button id="options-button">☰ Options</button>
+        <div id="timer-wrapper">
+            <div id="timer-display">25:00</div>
+            <div id="timer-label">Work Time</div>
+        </div>
+        <div id="controls">
+            <button id="start-pause">Start</button>
+            <button id="reset">Reset</button>
+        </div>
+    </div>
+
+    <div id="settings-panel">
+        <h2>Settings</h2>
+        <label for="work-video">Work Video URL:</label>
+        <input type="text" id="work-video" placeholder="Enter work video URL">
+        <label for="break-video">Break Video URL:</label>
+        <input type="text" id="break-video" placeholder="Enter break video URL">
+        <label for="work-duration">Work Duration (minutes):</label>
+        <input type="number" id="work-duration" value="25">
+        <label for="break-duration">Break Duration (minutes):</label>
+        <input type="number" id="break-duration" value="5">
+        <button id="apply-settings">Apply</button>
+    </div>
+
+    <div id="video-container" style="display: none;"></div>
+
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="script.js"></script>
+</body>
+</html>
