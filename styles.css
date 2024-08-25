@@ -36,9 +36,9 @@ body {
 }
 
 #settings-panel {
-    position: absolute;
+    position: fixed;
     top: 0;
-    left: -300px;
+    left: -300px; /* Start offscreen */
     width: 300px;
     height: 100%;
     background-color: #333;
@@ -46,13 +46,13 @@ body {
     padding: 20px;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
     z-index: 9;
-    transition: left 0.3s ease;
+    transition: left 0.3s ease; /* Smooth slide-in */
     overflow-y: auto;
     box-sizing: border-box;
 }
 
 #settings-panel.open {
-    left: 0;
+    left: 0; /* Slide in when 'open' class is added */
 }
 
 #settings-panel h2 {
@@ -97,20 +97,17 @@ body {
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-#timer-display {
-    font-size: 120px;
-    color: #333;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-}
-
 #timer-wrapper {
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+#timer-display {
+    font-size: 120px;
+    color: #333;
+    text-align: center;
+    position: relative;
 }
 
 #timer-label {

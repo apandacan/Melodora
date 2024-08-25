@@ -1,21 +1,16 @@
-let workDuration = 25 * 60;
-let breakDuration = 5 * 60;
+let workDuration = 25 * 60; // Work duration in seconds
+let breakDuration = 5 * 60; // Break duration in seconds
 let timerInterval = null;
 let isRunning = false;
 let isWorkTime = true;
 
-const timerElement = document.getElementById('timer');
+const timerElement = document.getElementById('timer-display');
 const timerLabel = document.getElementById('timer-label');
 const startPauseButton = document.getElementById('start-pause');
 const resetButton = document.getElementById('reset');
 const applySettingsButton = document.getElementById('apply-settings');
 const optionsButton = document.getElementById('options-button');
 const settingsPanel = document.getElementById('settings-panel');
-
-let workPlayer, breakPlayer;
-
-const beepSound = new Audio('https://www.soundjay.com/button/sounds/beep-07.mp3');
-const longBeepSound = new Audio('https://www.soundjay.com/button/sounds/beep-09.mp3');
 
 function formatTime(seconds) {
     const mins = Math.floor(seconds / 60);
@@ -25,65 +20,51 @@ function formatTime(seconds) {
 
 function startTimer() {
     isRunning = true;
-    if (isWorkTime) {
-        breakPlayer.pauseVideo(); // Ensure break video is paused
-        workPlayer.playVideo();
-        timerLabel.textContent = "Work Time";
-    } else {
-        workPlayer.pauseVideo(); // Ensure work video is paused
-        breakPlayer.playVideo();
-        timerLabel.textContent = "Break Time";
-    }
-
     timerInterval = setInterval(() => {
         if (isWorkTime) {
-            handleTimerTick(workDuration, () => {
+            workDuration--;
+            if (workDuration <= 0) {
                 clearInterval(timerInterval);
                 isWorkTime = false;
                 startBreak();
-            });
-            workDuration--;
+            }
         } else {
-            handleTimerTick(breakDuration, () => {
+            breakDuration--;
+            if (breakDuration <= 0) {
                 clearInterval(timerInterval);
                 isWorkTime = true;
                 startWork();
-            });
-            breakDuration--;
+            }
         }
         updateTimerDisplay();
     }, 1000);
 }
 
-function handleTimerTick(duration, callback) {
-    if (duration <= 3 && duration > 1) {
-        beepSound.play();
-    } else if (duration === 1) {
-        longBeepSound.play();
-    } else if (duration === 0) {
-        callback();
-    }
+function startBreak() {
+    timerLabel.textContent = "Break Time";
+    breakDuration = parseInt(document.getElementById('break-duration').value) * 60;
+    startTimer();
+}
+
+function startWork() {
+    timerLabel.textContent = "Work Time";
+    workDuration = parseInt(document.getElementById('work-duration').value) * 60;
+    startTimer();
 }
 
 function pauseTimer() {
-    isRunning = false;
     clearInterval(timerInterval);
-    if (isWorkTime) {
-        workPlayer.pauseVideo();
-    } else {
-        breakPlayer.pauseVideo();
-    }
+    isRunning = false;
 }
 
 function resetTimer() {
-    isRunning = false;
     clearInterval(timerInterval);
+    isRunning = false;
     isWorkTime = true;
     workDuration = parseInt(document.getElementById('work-duration').value) * 60;
     breakDuration = parseInt(document.getElementById('break-duration').value) * 60;
-    updateTimerDisplay();
     timerLabel.textContent = "Work Time";
-    pauseTimer();
+    updateTimerDisplay();
 }
 
 function updateTimerDisplay() {
@@ -91,85 +72,22 @@ function updateTimerDisplay() {
     timerElement.textContent = formatTime(duration);
 }
 
-function applySettings() {
-    const workVideoUrl = document.getElementById('work-video').value;
-    const breakVideoUrl = document.getElementById('break-video').value;
-    workDuration = parseInt(document.getElementById('work-duration').value) * 60;
-    breakDuration = parseInt(document.getElementById('break-duration').value) * 60;
-    
-    loadVideoPlayers(workVideoUrl, breakVideoUrl);
-    updateTimerDisplay();
-}
-
-function loadVideoPlayers(workUrl, breakUrl) {
-    if (workPlayer) workPlayer.destroy();
-    if (breakPlayer) breakPlayer.destroy();
-
-    workPlayer = new YT.Player('work-video', {
-        videoId: extractVideoId(workUrl),
-        height: '150',
-        width: '300',
-        events: {
-            'onReady': onPlayerReady
-        }
-    });
-
-    breakPlayer = new YT.Player('break-video', {
-        videoId: extractVideoId(breakUrl),
-        height: '150',
-        width: '300',
-        events: {
-            'onReady': onPlayerReady
-        }
-    });
-}
-
-function extractVideoId(url) {
-    const urlParams = new URLSearchParams(new URL(url).search);
-    return urlParams.get('v');
-}
-
-function onPlayerReady(event) {
-    updateTimerDisplay();
-}
-
-function startWork() {
-    isWorkTime = true;
-    workDuration = parseInt(document.getElementById('work-duration').value) * 60;
-    timerLabel.textContent = "Work Time";
-    startTimer();
-}
-
-function startBreak() {
-    isWorkTime = false;
-    breakDuration = parseInt(document.getElementById('break-duration').value) * 60;
-    timerLabel.textContent = "Break Time";
-    startTimer();
-}
-
-optionsButton.addEventListener('click', () => {
-    if (settingsPanel.classList.contains('open')) {
-        settingsPanel.classList.remove('open');
-    } else {
-        settingsPanel.classList.add('open');
-    }
-});
+applySettingsButton.addEventListener('click', resetTimer);
 
 startPauseButton.addEventListener('click', () => {
     if (isRunning) {
         pauseTimer();
         startPauseButton.textContent = 'Start';
     } else {
-        startTimer();
+        startWork();
         startPauseButton.textContent = 'Pause';
     }
 });
 
 resetButton.addEventListener('click', resetTimer);
-applySettingsButton.addEventListener('click', applySettings);
 
-window.onYouTubeIframeAPIReady = function() {
-    applySettings();
-};
+optionsButton.addEventListener('click', () => {
+    settingsPanel.classList.toggle('open');
+});
 
-timerElement.textContent = formatTime(workDuration);
+resetTimer(); // Initialize display
