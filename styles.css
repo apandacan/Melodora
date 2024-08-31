@@ -21,12 +21,13 @@ body {
 
 #timer-section {
     flex: 2;
-    background: linear-gradient(135deg, #3498db, #2ecc71);
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
     color: white;
+    transition: background 1s ease-in-out;
 }
 
 #timer-display {
@@ -171,4 +172,5 @@ body {
 #work-duration, #break-duration {
     margin-top: 10px; /* Ensure there is consistent space between these inputs */
 }
+
 /* shout out to chatGPT so I don't have to use bootstrap and want to kms */

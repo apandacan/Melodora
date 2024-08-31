@@ -97,8 +97,13 @@ function updateTimerDisplay() {
 }
 
 function applySettings() {
-    const workVideoUrl = document.getElementById('work-video').value;
-    const breakVideoUrl = document.getElementById('break-video').value;
+    let workVideoUrl = document.getElementById('work-video').value;
+    let breakVideoUrl = document.getElementById('break-video').value;
+
+    // ensure urls are valid
+    workVideoUrl = ensureValidUrl(workVideoUrl);
+    breakVideoUrl = ensureValidUrl(breakVideoUrl);
+
     workDuration = parseInt(document.getElementById('work-duration').value) * 60;
     breakDuration = parseInt(document.getElementById('break-duration').value) * 60;
     originalWorkDuration = workDuration;
@@ -157,6 +162,9 @@ function startWork() {
     workDuration = originalWorkDuration;
     timerLabel.textContent = "Work Time";
     startTimer();
+
+    // Change gradient to reddish for work time
+    document.getElementById('timer-section').style.background = "linear-gradient(135deg, #e74c3c, #c0392b)";
 }
 
 function startBreak() {
@@ -164,7 +172,11 @@ function startBreak() {
     breakDuration = originalBreakDuration;
     timerLabel.textContent = "Break Time";
     startTimer();
+
+    // Change gradient to the current color for break time
+    document.getElementById('timer-section').style.background = "linear-gradient(135deg, #3498db, #2ecc71)";
 }
+
 
 function toggleDuration() {
     const durationSettings = document.getElementById('duration-settings');
@@ -173,6 +185,17 @@ function toggleDuration() {
     } else {
         durationSettings.style.display = "none";
     }
+}
+
+function ensureValidUrl(url) {
+    if (!url) return '';
+    
+    // Ensure the URL starts with http:// or https://
+    if (!/^https?:\/\//i.test(url)) {
+        url = 'https://' + url;
+    }
+
+    return url;
 }
 
 startPauseButton.addEventListener('click', () => {
