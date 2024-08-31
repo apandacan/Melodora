@@ -106,3 +106,5 @@ body {
     0% { transform: scale(1); }
     100% { transform: scale(1.05); }
 }
+
+/* shout out to chatGPT so I don't have to use bootstrap and want to kms */
