@@ -1,6 +1,6 @@
 let workDuration = 25 * 60;
 let breakDuration = 5 * 60;
-let originalWorkDuration = workDuration; // Keep track of original durations
+let originalWorkDuration = workDuration;
 let originalBreakDuration = breakDuration;
 let timerInterval = null;
 let isRunning = false;
@@ -14,6 +14,9 @@ const applySettingsButton = document.getElementById('apply-settings');
 
 let workPlayer, breakPlayer;
 
+const beepSound = new Audio('beep.mp3'); // Short beep sound
+const finalBeepSound = new Audio('final-beep.mp3'); // Final distinct beeper booper sound 
+
 function formatTime(seconds) {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -23,15 +26,18 @@ function formatTime(seconds) {
 function startTimer() {
     isRunning = true;
     if (isWorkTime) {
+        breakPlayer.pauseVideo(); // Ensure break video is paused
         loopVideo(workPlayer);
         timerLabel.textContent = "Work Time";
     } else {
+        workPlayer.pauseVideo(); // Ensure work video is paused
         loopVideo(breakPlayer);
         timerLabel.textContent = "Break Time";
     }
 
     timerInterval = setInterval(() => {
         if (isWorkTime) {
+            handleBeeping(workDuration);
             workDuration--;
             if (workDuration <= 0) {
                 clearInterval(timerInterval);
@@ -39,6 +45,7 @@ function startTimer() {
                 startBreak();
             }
         } else {
+            handleBeeping(breakDuration);
             breakDuration--;
             if (breakDuration <= 0) {
                 clearInterval(timerInterval);
@@ -48,6 +55,18 @@ function startTimer() {
         }
         updateTimerDisplay();
     }, 1000);
+}
+
+function handleBeeping(duration) {
+    if (duration === 4) {
+        beepSound.play();
+    } else if (duration === 3) {
+        beepSound.play();
+    } else if (duration === 2) {
+        beepSound.play();
+    } else if (duration === 1) {
+        finalBeepSound.play();
+    }
 }
 
 function pauseTimer() {
@@ -64,12 +83,12 @@ function resetTimer() {
     isRunning = false;
     clearInterval(timerInterval);
     isWorkTime = true;
-    workDuration = originalWorkDuration; // Reset to original durations
+    workDuration = originalWorkDuration;
     breakDuration = originalBreakDuration;
     updateTimerDisplay();
     timerLabel.textContent = "Work Time";
     pauseTimer();
-    startPauseButton.textContent = 'Start'; // Reset button text
+    startPauseButton.textContent = 'Start';
 }
 
 function updateTimerDisplay() {
@@ -82,7 +101,7 @@ function applySettings() {
     const breakVideoUrl = document.getElementById('break-video').value;
     workDuration = parseInt(document.getElementById('work-duration').value) * 60;
     breakDuration = parseInt(document.getElementById('break-duration').value) * 60;
-    originalWorkDuration = workDuration; // Update original durations
+    originalWorkDuration = workDuration;
     originalBreakDuration = breakDuration;
     
     loadVideoPlayers(workVideoUrl, breakVideoUrl);
@@ -132,14 +151,14 @@ function loopVideo(player) {
 
 function startWork() {
     isWorkTime = true;
-    workDuration = originalWorkDuration; // Reset work duration
+    workDuration = originalWorkDuration;
     timerLabel.textContent = "Work Time";
     startTimer();
 }
 
 function startBreak() {
     isWorkTime = false;
-    breakDuration = originalBreakDuration; // Reset break duration
+    breakDuration = originalBreakDuration;
     timerLabel.textContent = "Break Time";
     startTimer();
 }
