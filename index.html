@@ -20,16 +20,24 @@
             <input type="text" id="work-video" placeholder="Enter work video URL">
             <label for="break-video">Break Video URL:</label>
             <input type="text" id="break-video" placeholder="Enter break video URL">
-            <label for="work-duration">Work Duration (minutes):</label>
-            <input type="number" id="work-duration" value="25">
-            <label for="break-duration">Break Duration (minutes):</label>
-            <input type="number" id="break-duration" value="5">
+            
+            <!-- Toggle Button -->
+            <button id="toggle-duration" onclick="toggleDuration()">Toggle Duration Settings</button>
+            
+            <!-- Work and Break Duration Inputs -->
+            <div id="duration-settings">
+                <label for="work-duration">Work Duration (minutes):</label>
+                <input type="number" id="work-duration" value="25">
+                <label for="break-duration">Break Duration (minutes):</label>
+                <input type="number" id="break-duration" value="5">
+            </div>
+            
             <div class="button-group">
                 <button id="apply-settings">Apply</button>
                 <button id="start-pause">Start</button>
                 <button id="reset">Reset</button>
             </div>
-        </div>        
+        </div>
     </div>
 
     <div id="video-container" style="display: none;"></div>

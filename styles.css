@@ -116,7 +116,7 @@ body {
 
     #settings-section button {
         font-size: 14px;
-        padding: 8px;
+        padding: 10px;
         margin: 0 5px;
     }
 }
@@ -133,12 +133,42 @@ body {
 
     #settings-section button {
         font-size: 12px;
-        padding: 6px;
+        padding: 8px;
     }
 }
 
 @keyframes pulse {
     0% { transform: scale(1); }
     100% { transform: scale(1.05); }
+}
+
+#toggle-duration {
+    margin-bottom: 10px !important;  /* Ensure there is space above the button */
+    padding: 10px 16px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+    width: 100%;  /* Ensure full width */
+    height: auto;
+    max-height: 2.8em;
+    display: block;
+    box-sizing: border-box;
+    line-height: 1.5;
+}
+
+#toggle-duration:hover {
+    background-color: #2980b9;
+}
+
+#break-video {
+    margin-bottom: 15px; /* Add margin-bottom specifically to the Break Video URL input */
+}
+
+#work-duration, #break-duration {
+    margin-top: 10px; /* Ensure there is consistent space between these inputs */
 }
 /* shout out to chatGPT so I don't have to use bootstrap and want to kms */

@@ -163,6 +163,15 @@ function startBreak() {
     startTimer();
 }
 
+function toggleDuration() {
+    const durationSettings = document.getElementById('duration-settings');
+    if (durationSettings.style.display === "none") {
+        durationSettings.style.display = "block";
+    } else {
+        durationSettings.style.display = "none";
+    }
+}
+
 startPauseButton.addEventListener('click', () => {
     if (isRunning) {
         pauseTimer();
