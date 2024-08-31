@@ -1,5 +1,7 @@
 let workDuration = 25 * 60;
 let breakDuration = 5 * 60;
+let originalWorkDuration = workDuration; // Keep track of original durations
+let originalBreakDuration = breakDuration;
 let timerInterval = null;
 let isRunning = false;
 let isWorkTime = true;
@@ -9,8 +11,6 @@ const timerLabel = document.getElementById('timer-label');
 const startPauseButton = document.getElementById('start-pause');
 const resetButton = document.getElementById('reset');
 const applySettingsButton = document.getElementById('apply-settings');
-const settingsButton = document.getElementById('settings-button');
-const settingsPanel = document.getElementById('settings-panel');
 
 let workPlayer, breakPlayer;
 
@@ -23,12 +23,10 @@ function formatTime(seconds) {
 function startTimer() {
     isRunning = true;
     if (isWorkTime) {
-        breakPlayer.pauseVideo(); // Ensure break video is paused
-        workPlayer.playVideo();
+        loopVideo(workPlayer);
         timerLabel.textContent = "Work Time";
     } else {
-        workPlayer.pauseVideo(); // Ensure work video is paused
-        breakPlayer.playVideo();
+        loopVideo(breakPlayer);
         timerLabel.textContent = "Break Time";
     }
 
@@ -66,11 +64,12 @@ function resetTimer() {
     isRunning = false;
     clearInterval(timerInterval);
     isWorkTime = true;
-    workDuration = parseInt(document.getElementById('work-duration').value) * 60;
-    breakDuration = parseInt(document.getElementById('break-duration').value) * 60;
+    workDuration = originalWorkDuration; // Reset to original durations
+    breakDuration = originalBreakDuration;
     updateTimerDisplay();
     timerLabel.textContent = "Work Time";
     pauseTimer();
+    startPauseButton.textContent = 'Start'; // Reset button text
 }
 
 function updateTimerDisplay() {
@@ -83,6 +82,8 @@ function applySettings() {
     const breakVideoUrl = document.getElementById('break-video').value;
     workDuration = parseInt(document.getElementById('work-duration').value) * 60;
     breakDuration = parseInt(document.getElementById('break-duration').value) * 60;
+    originalWorkDuration = workDuration; // Update original durations
+    originalBreakDuration = breakDuration;
     
     loadVideoPlayers(workVideoUrl, breakVideoUrl);
     updateTimerDisplay();
@@ -94,19 +95,17 @@ function loadVideoPlayers(workUrl, breakUrl) {
 
     workPlayer = new YT.Player('work-video', {
         videoId: extractVideoId(workUrl),
-        height: '150',
-        width: '300',
         events: {
-            'onReady': onPlayerReady
+            'onReady': onPlayerReady,
+            'onStateChange': onPlayerStateChange
         }
     });
 
     breakPlayer = new YT.Player('break-video', {
         videoId: extractVideoId(breakUrl),
-        height: '150',
-        width: '300',
         events: {
-            'onReady': onPlayerReady
+            'onReady': onPlayerReady,
+            'onStateChange': onPlayerStateChange
         }
     });
 }
@@ -120,27 +119,30 @@ function onPlayerReady(event) {
     updateTimerDisplay();
 }
 
+function onPlayerStateChange(event) {
+    if (event.data === YT.PlayerState.ENDED) {
+        loopVideo(event.target);
+    }
+}
+
+function loopVideo(player) {
+    player.seekTo(0);
+    player.playVideo();
+}
+
 function startWork() {
     isWorkTime = true;
-    workDuration = parseInt(document.getElementById('work-duration').value) * 60;
+    workDuration = originalWorkDuration; // Reset work duration
     timerLabel.textContent = "Work Time";
     startTimer();
 }
 
 function startBreak() {
     isWorkTime = false;
-    breakDuration = parseInt(document.getElementById('break-duration').value) * 60;
+    breakDuration = originalBreakDuration; // Reset break duration
     timerLabel.textContent = "Break Time";
     startTimer();
 }
-
-settingsButton.addEventListener('click', () => {
-    if (settingsPanel.classList.contains('open')) {
-        settingsPanel.classList.remove('open');
-    } else {
-        settingsPanel.classList.add('open');
-    }
-});
 
 startPauseButton.addEventListener('click', () => {
     if (isRunning) {
