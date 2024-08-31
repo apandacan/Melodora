@@ -106,6 +106,9 @@ function applySettings() {
     
     loadVideoPlayers(workVideoUrl, breakVideoUrl);
     updateTimerDisplay();
+
+    // Automatically hide the duration settings after applying
+    document.getElementById('duration-settings').style.display = 'none';
 }
 
 function loadVideoPlayers(workUrl, breakUrl) {
