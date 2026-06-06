@@ -1,0 +1,203 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+
+  body.theme-dark  { --bg1:#181a22; --bg2:#0a0b0f; --fg:#ffffff; --panel:#16161d; --panel-bd:rgba(255,255,255,.1);
+                     --field-bg:rgba(0,0,0,.35); --field-bd:rgba(255,255,255,.18);
+                     --btn-bd:rgba(255,255,255,.22); --btn-hover:rgba(255,255,255,.10);
+                     --track:rgba(255,255,255,.22); --line:rgba(255,255,255,.5); }
+  body.theme-light { --bg1:#eef1f7; --bg2:#dde1ea; --fg:#15171d; --panel:#ffffff; --panel-bd:rgba(0,0,0,.1);
+                     --field-bg:rgba(0,0,0,.05); --field-bd:rgba(0,0,0,.18);
+                     --btn-bd:rgba(0,0,0,.2); --btn-hover:rgba(0,0,0,.07);
+                     --track:rgba(0,0,0,.16); --line:rgba(0,0,0,.45); }
+
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, Inter, sans-serif;
+    color: var(--fg); overflow: hidden; height: 100vh;
+    background: radial-gradient(circle at 50% 32%, var(--bg1) 0%, var(--bg2) 70%);
+    transition: background 0.5s ease;
+  }
+
+  /* ---------- Video background ---------- */
+  #bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+  .video-frame { position: absolute; inset: 0; opacity: 0; transition: opacity 1s ease; }
+  .video-frame.active { opacity: 1; }
+  body.no-video .video-frame { opacity: 0 !important; }
+  .video-frame iframe {
+    position: absolute; top: 50%; left: 50%;
+    width: 100vw; height: 56.25vw; min-height: 100vh; min-width: 177.78vh;
+    transform: translate(-50%, -50%) scale(1.15);
+    filter: blur(24px) saturate(1.15); pointer-events: none;
+  }
+  #scrim { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+  body.theme-dark  #scrim { background: radial-gradient(ellipse at center, rgba(0,0,0,.12) 0%, rgba(0,0,0,.5) 100%); }
+  body.theme-light #scrim { background: radial-gradient(ellipse at center, rgba(255,255,255,.10) 0%, rgba(255,255,255,.42) 100%); }
+
+  #viz { position: fixed; inset: 0; z-index: 2; pointer-events: none; }
+
+  /* ---------- Center text — direct root child so mix-blend can adapt against the real background ---------- */
+  #centerText {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 3; pointer-events: none;
+    mix-blend-mode: difference; color: #fff;
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+  }
+  .brand { font-size: 18px; font-weight: 600; letter-spacing: 6px; text-transform: uppercase; opacity: .85; margin-bottom: 10px; }
+  .mode  { font-size: 15px; font-weight: 600; letter-spacing: 4px; text-transform: uppercase; opacity: .8; margin-bottom: 4px; }
+  .time  { font-size: clamp(72px, 16vw, 160px); font-weight: 200; font-variant-numeric: tabular-nums; line-height: 1; }
+  .dots { display: flex; gap: 10px; margin-top: 18px; }
+  .dot { width: 11px; height: 11px; border-radius: 50%; border: 2px solid #fff; opacity: .55; }
+  .dot.done { background: #fff; opacity: 1; }
+  .dot.long { width: 16px; border-radius: 4px; }
+
+  /* ---------- Bottom controls + volume ---------- */
+  #controls { position: fixed; left: 50%; bottom: 92px; transform: translateX(-50%); z-index: 5;
+              display: flex; gap: 14px; pointer-events: auto; flex-wrap: wrap; justify-content: center; }
+  button {
+    font: inherit; font-size: 15px; font-weight: 600; padding: 11px 22px;
+    border: 1px solid transparent; border-radius: 999px; cursor: pointer;
+    background: transparent; color: var(--fg); opacity: .72;
+    transition: background .18s, border-color .18s, opacity .18s, transform .05s;
+  }
+  button:hover { opacity: 1; background: var(--btn-hover); border-color: var(--btn-bd); }
+  button:active { transform: scale(.96); }
+  button.primary { opacity: 1; }
+
+  #volBar { position: fixed; left: 50%; bottom: 56px; transform: translateX(-50%); z-index: 5;
+            display: flex; align-items: center; gap: 12px; pointer-events: auto; color: var(--fg); opacity: .75; transition: opacity .18s; }
+  #volBar:hover { opacity: 1; }
+  #volIcon { display: grid; place-items: center; width: 20px; height: 20px; }
+  #masterVol { width: 150px; }
+
+  /* full-width seek/scrubber pinned to the bottom edge */
+  #scrubber { position: fixed; left: 20%; right: 20%; bottom: 0; z-index: 5; height: 16px; cursor: pointer; pointer-events: auto; }
+  #scrubber::before { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: var(--track); border-radius: 5px 5px 0 0; transition: height .15s; }
+  #scrubFill { position: absolute; left: 0; bottom: 0; width: 0%; height: 5px; background: var(--fg); border-radius: 5px 5px 0 0; opacity: .85; transition: height .15s; }
+  #scrubber:hover::before, #scrubber:hover #scrubFill { height: 10px; }
+
+  .corner { position: fixed; top: 20px; z-index: 6; width: 42px; height: 42px; padding: 0; border-radius: 50%;
+            display: grid; place-items: center; background: transparent; border: 1px solid transparent; color: var(--fg);
+            opacity: .6; cursor: pointer; transition: background .18s, border-color .18s, opacity .18s; }
+  .corner:hover { opacity: 1; background: var(--btn-hover); border-color: var(--btn-bd); }
+  #themeBtn { left: 20px; }
+  #shopBtn { left: 74px; width: auto; padding: 0 15px; gap: 8px; border-radius: 999px;
+             display: inline-flex; align-items: center; font-size: 13px; font-weight: 600; }
+  #shopBtn span { white-space: nowrap; }
+  #gear { right: 20px; }
+
+  /* ---------- Coins / gamification ---------- */
+  #coins { position: fixed; top: 20px; right: 74px; z-index: 6; height: 42px;
+           display: flex; align-items: center; gap: 7px; color: var(--fg); opacity: .8;
+           font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: .3px;
+           pointer-events: none; user-select: none; }
+  #coinIcon { display: grid; place-items: center; width: 17px; height: 17px; opacity: .9; }
+  #coinPops { position: fixed; top: 20px; right: 74px; z-index: 7; height: 42px; pointer-events: none; }
+  .coin-pop { position: absolute; right: 0; top: 50%; white-space: nowrap;
+              font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--fg);
+              opacity: 0; animation: coinFloat 1150ms cubic-bezier(.22,.61,.36,1) forwards; }
+  @keyframes coinFloat {
+    0%   { opacity: 0; transform: translateY(8px)   scale(.85); }
+    18%  { opacity: 1; transform: translateY(-3px)  scale(1.08); }
+    34%  { opacity: 1; transform: translateY(-11px) scale(1); }
+    100% { opacity: 0; transform: translateY(-40px) scale(1); }
+  }
+
+  /* subtle signature — blends with whatever's behind it, never in the way */
+  #credit {
+    position: fixed; right: 15px; bottom: 20px; z-index: 3;
+    mix-blend-mode: difference; color: #fff;
+    font-size: 11.5px; font-weight: 500; letter-spacing: .4px;
+    opacity: .5; pointer-events: none; user-select: none;
+  }
+  #credit .heart { opacity: .9; }
+
+  /* ---------- Settings modal ---------- */
+  #overlay, #shopOverlay { position: fixed; inset: 0; z-index: 10; background: rgba(5,5,8,.55); backdrop-filter: blur(14px);
+             display: none; align-items: center; justify-content: center; padding: 20px; overflow: hidden; }
+  #overlay.open, #shopOverlay.open { display: flex; }
+  .modal { position: relative; background: var(--panel); border: 1px solid var(--panel-bd); border-radius: 20px;
+           width: 100%; max-width: 480px; box-shadow: 0 30px 80px rgba(0,0,0,.5); color: var(--fg);
+           max-height: calc(100vh - 40px); display: flex; flex-direction: column; overflow: hidden; }
+  .modal h2 { font-size: 22px; font-weight: 700; padding: 26px 28px 10px; }
+  .modal-body { overflow-y: auto; min-height: 0; padding: 0 28px 24px; scrollbar-width: thin; scrollbar-color: var(--track) transparent; }
+  .modal-body::-webkit-scrollbar { width: 10px; }
+  .modal-body::-webkit-scrollbar-track, .modal-body::-webkit-scrollbar-corner { background: transparent; }
+  .modal-body::-webkit-scrollbar-thumb { background: var(--track); border-radius: 999px; border: 3px solid transparent; background-clip: padding-box; }
+  .modal-body::-webkit-scrollbar-thumb:hover { background: var(--line); border: 3px solid transparent; background-clip: padding-box; }
+  .modal .sub { font-size: 13px; opacity: .6; margin-bottom: 22px; }
+  .group { margin-bottom: 20px; }
+  .group > .glabel { font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; opacity: .55; margin-bottom: 10px; display: block; }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 13px; opacity: .8; margin-bottom: 5px; }
+  .field input[type=text], .field input[type=number] {
+    width: 100%; padding: 11px 13px; border-radius: 10px; border: 1px solid var(--field-bd);
+    background: var(--field-bg); color: var(--fg); font-size: 14px; }
+  .field input:focus { outline: none; border-color: var(--line); }
+  .grid4 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .check { display: flex; align-items: center; gap: 10px; font-size: 14px; opacity: .9; margin-bottom: 10px; cursor: pointer; }
+  .check input { width: 18px; height: 18px; accent-color: var(--fg); cursor: pointer; }
+  input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 5px; border-radius: 3px; background: var(--track); cursor: pointer; outline: none; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px; height: 13px; border-radius: 50%; background: var(--fg); border: none; }
+  input[type=range]::-moz-range-thumb { width: 13px; height: 13px; border: none; border-radius: 50%; background: var(--fg); }
+  #closeBtn, #shopClose { position: absolute; top: 14px; right: 14px; width: 34px; height: 34px; padding: 0; border-radius: 50%;
+              display: grid; place-items: center; font-size: 22px; line-height: 1; opacity: .55; }
+  .tip { font-size: 12px; opacity: .5; line-height: 1.5; margin-top: 4px; }
+  .saved-hint { font-size: 12px; opacity: .45; text-align: center; margin-top: 6px; }
+
+  /* ---------- Shop ---------- */
+  .shop-balance { position: relative; display: flex; align-items: center; gap: 8px; padding: 0 28px 16px;
+                  font-size: 19px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .shop-balance svg { width: 19px; height: 19px; opacity: .9; }
+  .spend-pop { position: absolute; right: 28px; top: 50%; white-space: nowrap; font-size: 15px; font-weight: 700;
+               font-variant-numeric: tabular-nums; opacity: 0; pointer-events: none; animation: spendFloat 950ms ease-out forwards; }
+  @keyframes spendFloat {
+    0%   { opacity: 0;  transform: translateY(6px); }
+    22%  { opacity: .9; transform: translateY(0); }
+    100% { opacity: 0;  transform: translateY(-22px); }
+  }
+  .shop-item { display: flex; align-items: center; gap: 14px; padding: 11px 12px; margin-bottom: 10px;
+               border: 1px solid var(--field-bd); border-radius: 12px; background: var(--field-bg); transition: border-color .18s; }
+  .shop-item.is-equipped { border-color: var(--line); }
+  .shop-preview { flex: 0 0 46px; width: 46px; height: 46px; display: grid; place-items: center;
+                  border-radius: 9px; background: var(--btn-hover); color: var(--fg); overflow: hidden; text-align: center; }
+  .shop-info { flex: 1 1 auto; min-width: 0; }
+  .shop-name { font-size: 14px; font-weight: 600; }
+  .shop-desc { font-size: 12px; opacity: .6; margin-top: 3px; line-height: 1.35; }
+  .shop-buy { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; opacity: 1;
+              padding: 9px 15px; border-radius: 999px; border: 1px solid var(--btn-bd); font-size: 13px; font-weight: 600; }
+  .shop-buy svg { width: 14px; height: 14px; }
+  .shop-buy.broke { opacity: .38; pointer-events: none; }
+  .shop-buy.equipped { background: var(--fg); color: var(--bg2); border-color: var(--fg); opacity: 1; }
+  .pixfont-sample { font-family: 'Press Start 2P', monospace; font-size: 11px; line-height: 1.5; letter-spacing: 0; }
+  .shop-colors { margin-top: 2px; }
+  .shop-colabel { display: flex; align-items: center; gap: 4px; font-size: 12px; opacity: .55; margin-bottom: 9px; }
+  .shop-colabel svg { width: 13px; height: 13px; }
+  .swatch-row { display: flex; gap: 11px; flex-wrap: wrap; }
+  .swatch { width: 30px; height: 30px; padding: 0; border-radius: 50%; border: 2px solid var(--field-bd);
+            background: var(--sw, transparent); position: relative; cursor: pointer; opacity: 1; transition: transform .1s, border-color .15s; }
+  .swatch:hover { transform: scale(1.12); background: var(--sw, transparent); border-color: var(--line); }
+  .swatch.locked { opacity: .4; }
+  .swatch.broke { opacity: .18; pointer-events: none; }
+  .swatch.equipped { border-color: var(--fg); box-shadow: 0 0 0 2px var(--panel), 0 0 0 4px var(--fg); }
+  .swatch-default { background: var(--track); }
+  .swatch-default::after { content: ''; position: absolute; left: 4px; right: 4px; top: 50%; height: 2px; margin-top: -1px;
+                           background: var(--fg); opacity: .8; border-radius: 2px; transform: rotate(-45deg); }
+  #adminBar { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; padding: 8px 28px 16px; }
+  #adminToggle { opacity: .22; cursor: pointer; font-weight: 800; font-size: 20px; line-height: 1; padding: 0 8px; user-select: none; }
+  #adminToggle:hover { opacity: .5; }
+  #adminInput { display: none; width: 72px; padding: 6px 9px; border-radius: 8px; border: 1px solid var(--field-bd);
+                background: var(--field-bg); color: var(--fg); font-size: 13px; text-align: center; }
+  #adminTools { display: none; gap: 8px; flex-wrap: wrap; }
+  #adminTools button { padding: 7px 12px; font-size: 12px; font-weight: 600; border-radius: 999px; border: 1px solid var(--btn-bd); opacity: .85; }
+  .pack-swatches { display: flex; gap: 3px; }
+  .pack-swatches span { display: block; width: 8px; height: 30px; border-radius: 2px; }
+
+  /* pixel-art display font (Font shop item) */
+  /* per-font transform: translateY(em) optically re-centres each font's digits in the ring (metrics vary a lot) */
+  body.font-pixel #centerText { font-family: 'Press Start 2P', 'Courier New', monospace; }
+  body.font-pixel .time { font-weight: 400; transform: translateY(0.13em); }
+  body.font-pixel .brand, body.font-pixel .mode { letter-spacing: 2px; }
+  @font-face { font-family: 'DSEG7'; src: url('https://cdn.jsdelivr.net/npm/dseg@0.46.0/fonts/DSEG7-Classic/DSEG7Classic-Bold.woff2') format('woff2'); font-display: swap; }
+  body.font-digital .time { font-family: 'DSEG7', 'Courier New', monospace; font-weight: 400; letter-spacing: 2px; transform: translateY(0.06em); }   /* 7-seg renders digits+colon only → scope to .time */
+  body.font-cursive #centerText { font-family: 'Pacifico', cursive; }
+  body.font-cursive .time { font-weight: 400; transform: translateY(-0.06em); }
+  body.font-roman #centerText { font-family: 'Cinzel', serif; }
+  body.font-roman .time { font-weight: 600; transform: translateY(0.1em); }

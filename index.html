@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Melodora</title>
+<link rel="stylesheet" href="styles.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pacifico&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/meyda@5.6.3/dist/web/meyda.min.js"></script>
+</head>
+<body class="theme-dark idle">
+
+  <div id="bg">
+    <div class="video-frame" id="frameWork"><div id="workPlayer"></div></div>
+    <div class="video-frame" id="frameBreak"><div id="breakPlayer"></div></div>
+  </div>
+  <div id="scrim"></div>
+  <canvas id="viz"></canvas>
+
+  <div id="centerText">
+    <div class="brand">Melodora</div>
+    <div class="mode" id="modeLabel">Ready</div>
+    <div class="time" id="time">35:00</div>
+    <div class="dots" id="dots"></div>
+  </div>
+
+  <div id="controls">
+    <button class="primary" id="mainBtn">Start</button>
+    <button id="resetBtn">Reset</button>
+    <button id="skipBtn">Skip&nbsp;⏭</button>
+  </div>
+
+  <div id="volBar">
+    <span id="volIcon"></span>
+    <input id="masterVol" type="range" min="0" max="100" value="100" title="Volume" />
+  </div>
+
+  <div id="scrubber" title="Seek through the track"><div id="scrubFill"></div></div>
+
+  <button class="corner" id="themeBtn" title="Theme"></button>
+  <button class="corner" id="shopBtn" title="Shop"></button>
+  <div id="coins" title="Coins earned from completed focus sessions"><span id="coinIcon"></span><span id="coinNum">0</span></div>
+  <div id="coinPops" aria-hidden="true"></div>
+  <button class="corner" id="gear" title="Settings"></button>
+
+  <div id="credit">made with <span class="heart">♥</span> by DZ</div>
+
+  <div id="overlay">
+    <div class="modal">
+      <button class="corner" id="closeBtn" title="Close">×</button>
+      <h2>Settings</h2>
+      <div class="modal-body">
+
+      <div class="group">
+        <span class="glabel">Music</span>
+        <div class="field"><label for="workUrl">Work music — YouTube link</label>
+          <input id="workUrl" type="text" placeholder="https://www.youtube.com/watch?v=..." /></div>
+        <div class="field"><label for="breakUrl">Break music — YouTube link</label>
+          <input id="breakUrl" type="text" placeholder="https://www.youtube.com/watch?v=..." /></div>
+      </div>
+
+      <div class="group">
+        <span class="glabel">Timing (minutes)</span>
+        <div class="grid4">
+          <div class="field"><label for="workMin">Work</label><input id="workMin" type="number" min="1" max="180" value="35" /></div>
+          <div class="field"><label for="shortMin">Short break</label><input id="shortMin" type="number" min="1" max="120" value="5" /></div>
+          <div class="field"><label for="longMin">Long break</label><input id="longMin" type="number" min="1" max="120" value="10" /></div>
+          <div class="field"><label for="cycles">Short breaks → long break</label><input id="cycles" type="number" min="1" max="12" value="3" /></div>
+        </div>
+      </div>
+
+      <div class="group">
+        <span class="glabel">Track balance</span>
+        <div class="field"><label>Work music — <span id="workVolVal">80</span>%</label><input id="workVol" type="range" min="0" max="100" value="80" /></div>
+        <div class="field"><label>Break music — <span id="breakVolVal">80</span>%</label><input id="breakVol" type="range" min="0" max="100" value="80" /></div>
+        <div class="field"><label>Transition cue — <span id="cueVolVal">80</span>%</label><input id="cueVol" type="range" min="0" max="100" value="80" /></div>
+        <div class="field"><label>Cue pitch — <span id="cuePitchVal">+2</span> st</label><input id="cuePitch" type="range" min="-12" max="12" value="2" /></div>
+        <div class="field"><label>Cue tone — <span id="cueToneVal">0</span></label><input id="cueTone" type="range" min="0" max="100" value="0" /></div>
+      </div>
+
+      <div class="group">
+        <span class="glabel">Display</span>
+        <label class="check"><input type="checkbox" id="showVideo" checked /> Show video background</label>
+        <label class="check"><input type="checkbox" id="showViz" checked /> Show audio visualizer</label>
+        <div class="field" style="margin:8px 0 12px"><label>Visualizer intensity — <span id="vizIntensityVal">80</span>%</label><input id="vizIntensity" type="range" min="0" max="100" value="80" /></div>
+        <div class="field" style="margin:8px 0 14px"><label>Visualizer noise gate — <span id="quietGateVal">10</span>%</label><input id="quietGate" type="range" min="0" max="100" value="10" /></div>
+        <label class="check"><input type="checkbox" id="reactToAudio" /> React to real audio</label>
+        <label class="check"><input type="checkbox" id="calmParticles" /> Calm particles (fade out instead of flying off)</label>
+        <label class="check"><input type="checkbox" id="rave" checked /> Rave lights on intense parts</label>
+        <label class="check"><input type="checkbox" id="raveFull" /> Rave lights: full row (off = 2 each side)</label>
+        <div class="field" style="margin:8px 0 10px"><label>Rave lights — at most every <span id="raveCdVal">3</span> min</label><input id="raveCd" type="range" min="1" max="30" value="3" /></div>
+        <label class="check"><input type="checkbox" id="raveTest" /> Test rave lights (while checked)</label>
+      </div>
+
+      <div class="saved-hint">✓ Saved automatically</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="shopOverlay">
+    <div class="modal">
+      <button class="corner" id="shopClose" title="Close">×</button>
+      <h2>Customize</h2>
+      <div class="shop-balance" id="shopBalance"></div>
+      <div class="modal-body" id="shopBody"></div>
+      <div id="adminBar">
+        <span id="adminToggle" title="admin">·</span>
+        <input id="adminInput" type="text" inputmode="numeric" maxlength="4" placeholder="code" />
+        <span id="adminTools"></span>
+      </div>
+    </div>
+  </div>
+
+<!-- one shared global scope: classic scripts, loaded in dependency order (do not reorder; not ES modules) -->
+<script src="settings.js"></script>
+<script src="youtube.js"></script>
+<script src="audio.js"></script>
+<script src="visuals.js"></script>
+<script src="timer.js"></script>
+<script src="shop.js"></script>
+<script src="main.js"></script>
+</body>
+</html>
