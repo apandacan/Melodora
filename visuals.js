@@ -184,6 +184,27 @@ function drawNyan(x, y, s, ang) {                                  // tiny Nyan 
   ctx.fillStyle = '#222'; ctx.fillRect(u * 0.35, -u * 0.45, u * 0.4, u * 0.4); ctx.fillRect(u * 0.35, u * 0.25, u * 0.4, u * 0.4);   // eyes
   ctx.restore();
 }
+const nyanImg = new Image(); nyanImg.src = 'nyancat.png';         // real Nyan Cat sprite; content band = sx0,sy412,sw922,sh318
+const DUCK_PX = ['..YYY....', '.YYYYY...', '.YYEYYY..', '.YYYYYYOO', 'YYYYYYYY.', 'YYYYYYYY.', '.YYYYYY..', '..YYYY...'];   // Y=body O=beak E=eye
+function drawDuck(x, y, s, flip) {                                 // smooth rubber duck (always yellow)
+  ctx.save(); ctx.translate(x, y); if (flip) ctx.scale(-1, 1);
+  ctx.fillStyle = '#ffd23d';
+  ctx.beginPath(); ctx.ellipse(-0.15 * s, 0.45 * s, 1.25 * s, 0.8 * s, 0, 0, Math.PI * 2); ctx.fill();   // body
+  ctx.beginPath(); ctx.arc(0.7 * s, -0.5 * s, 0.62 * s, 0, Math.PI * 2); ctx.fill();                     // head
+  ctx.fillStyle = '#ff921a'; ctx.beginPath(); ctx.moveTo(1.1 * s, -0.6 * s); ctx.lineTo(1.8 * s, -0.42 * s); ctx.lineTo(1.1 * s, -0.24 * s); ctx.closePath(); ctx.fill();   // beak
+  ctx.fillStyle = '#1c1c1c'; ctx.beginPath(); ctx.arc(0.84 * s, -0.62 * s, 0.12 * s, 0, Math.PI * 2); ctx.fill();   // eye
+  ctx.restore();
+}
+function drawDuckPixel(x, y, s, flip) {                            // 8-bit rubber duck
+  const px = Math.max(2, s * 0.9), ox = -9 * px / 2, oy = -DUCK_PX.length * px / 2;
+  ctx.save(); ctx.translate(x, y); if (flip) ctx.scale(-1, 1);
+  for (let r = 0; r < DUCK_PX.length; r++) for (let c = 0; c < 9; c++) {
+    const ch = DUCK_PX[r][c]; if (ch === '.') continue;
+    ctx.fillStyle = ch === 'O' ? '#ff921a' : ch === 'E' ? '#1c1c1c' : '#ffd23d';
+    ctx.fillRect(ox + c * px, oy + r * px, px, px);
+  }
+  ctx.restore();
+}
 function render(now, sig) {
   ctx.clearRect(0, 0, W, H);
   renderRave(now, sig);
@@ -300,7 +321,14 @@ function render(now, sig) {
     if (particleStyle === 'pixelParticle') { const G = 4, s = Math.max(G, Math.round(p.size * 1.8 / G) * G); ctx.fillRect(Math.round(X / G) * G - s / 2, Math.round(Y / G) * G - s / 2, s, s); }
     else if (particleStyle === 'starParticle') drawStar(X, Y, p.size * 2.1);
     else if (particleStyle === 'noteParticle') drawNote(X, Y, p.size * 1.9);
-    else if (particleStyle === 'nyanParticle') { ctx.globalAlpha = al; drawNyan(X, Y, p.size, Math.atan2(p.vy, p.vx)); ctx.globalAlpha = 1; }
+    else if (particleStyle === 'nyanParticle') {
+      if (nyanImg.complete && nyanImg.naturalWidth) {           // real sprite, cropped to the nyan band, facing its flight direction
+        ctx.save(); ctx.globalAlpha = al; ctx.translate(X, Y); ctx.rotate(Math.atan2(p.vy, p.vx));
+        const dw = p.size * 13, dh = dw * 0.345; ctx.drawImage(nyanImg, 0, 412, 922, 318, -dw / 2, -dh / 2, dw, dh); ctx.restore();
+      } else { ctx.globalAlpha = al; drawNyan(X, Y, p.size, Math.atan2(p.vy, p.vx)); ctx.globalAlpha = 1; }   // fallback until it loads
+    }
+    else if (particleStyle === 'duckParticle') { ctx.globalAlpha = al; drawDuck(X, Y, p.size * 3.5, p.vx < 0); ctx.globalAlpha = 1; }
+    else if (particleStyle === 'pixelDuckParticle') { ctx.globalAlpha = al; drawDuckPixel(X, Y, p.size, p.vx < 0); ctx.globalAlpha = 1; }
     else { ctx.beginPath(); ctx.arc(X, Y, p.size, 0, Math.PI * 2); ctx.fill(); }
   }
 }

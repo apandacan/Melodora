@@ -1,0 +1,6 @@
+# Claude Code local tooling (not needed by the app)
+.claude/
+
+# OS junk
+.DS_Store
+Thumbs.db

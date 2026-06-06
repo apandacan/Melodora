@@ -84,6 +84,8 @@ const SHOP = [
   { id: 'starParticle',  slot: 'particleShape', kind: 'skin', name: 'Stars',          cost: SKIN_COST, desc: 'Twinkling five-point stars flung from the ring.' },
   { id: 'noteParticle',  slot: 'particleShape', kind: 'skin', name: 'Music Notes',    cost: SKIN_COST, desc: 'Little eighth-notes instead of dots.' },
   { id: 'nyanParticle',  slot: 'particleShape', kind: 'skin', name: 'Nyan Cat',       cost: SKIN_COST, desc: 'Every spark is a tiny Nyan Cat trailing a rainbow.' },
+  { id: 'duckParticle',  slot: 'particleShape', kind: 'skin', name: 'Rubber Ducky',   cost: SKIN_COST, desc: 'Squeaky yellow ducks bobbing off the ring.' },
+  { id: 'pixelDuckParticle', slot: 'particleShape', kind: 'skin', name: 'Pixel Ducky', cost: SKIN_COST, desc: '8-bit rubber ducks.' },
   { id: 'pixelCircle',   slot: 'circleShape',   kind: 'skin', name: 'Pixel Ring',      cost: SKIN_COST, desc: 'The reactive ring rebuilt from chunky pixels.' },
   { id: 'drumRing',      slot: 'circleShape',   kind: 'skin', name: 'Drum',            cost: SKIN_COST, desc: 'A taut drum skin with tuning lugs that bounces on the beat.' },
   { id: 'eqRing',        slot: 'circleShape',   kind: 'skin', name: 'Equalizer Bars',  milestone: 25,   desc: 'Bars around the ring that pump with the music.' },
@@ -152,7 +154,9 @@ function previewHTML(it) {
   // particle shapes
   if (it.id === 'starParticle') { const p = []; for (let i = 0; i < 10; i++) { const a = -Math.PI/2 + i*Math.PI/5, rr = i % 2 ? 4 : 9.5; p.push(`${(14+Math.cos(a)*rr).toFixed(1)},${(14+Math.sin(a)*rr).toFixed(1)}`); } return svg(`<polygon points="${p.join(' ')}" fill="currentColor"/>`); }
   if (it.id === 'noteParticle') return svg(`<ellipse cx="10" cy="19" rx="4" ry="3" fill="currentColor"/><rect x="13" y="7" width="2" height="11" fill="currentColor"/><path d="M13 7 q6 1 5 6 q0 -4 -5 -3 z" fill="currentColor"/>`);
-  if (it.id === 'nyanParticle') { const rb = ['#ff2d2d','#ff9b1f','#ffe92b','#3fe04a','#2f8bff','#9b4dff']; let s = ''; for (let i = 0; i < 6; i++) s += `<rect x="2" y="${(8.5+i*1.9).toFixed(1)}" width="13" height="2" fill="${rb[i]}"/>`; return svg(s + `<rect x="14" y="9" width="9" height="10" rx="1" fill="#9aa0a6"/><rect x="14" y="9" width="5" height="10" fill="#ffc4dd"/><rect x="18" y="12" width="1.6" height="1.6" fill="#222"/><rect x="18" y="15" width="1.6" height="1.6" fill="#222"/>`); }
+  if (it.id === 'nyanParticle') return `<div class="nyan-thumb"></div>`;   // the real sprite, cropped to the nyan band
+  if (it.id === 'duckParticle') return svg(`<ellipse cx="12" cy="18" rx="9" ry="6" fill="#ffd23d"/><circle cx="18" cy="11" r="5" fill="#ffd23d"/><polygon points="22,10 27,11.5 22,13" fill="#ff921a"/><circle cx="19" cy="10" r="1.2" fill="#1c1c1c"/>`);
+  if (it.id === 'pixelDuckParticle') { const u = 2.6, ox = 2.3, oy = 3.6; let b = ''; for (let r = 0; r < DUCK_PX.length; r++) for (let c = 0; c < 9; c++) { const ch = DUCK_PX[r][c]; if (ch === '.') continue; const col = ch === 'O' ? '#ff921a' : ch === 'E' ? '#1c1c1c' : '#ffd23d'; b += `<rect x="${(ox+c*u).toFixed(1)}" y="${(oy+r*u).toFixed(1)}" width="${u}" height="${u}" fill="${col}"/>`; } return svg(b); }
   // ripple shapes
   if (it.id === 'sharpRipple') return svg(`<polygon points="14,3 17,11 25,14 17,17 14,25 11,17 3,14 11,11" fill="none" stroke="currentColor" stroke-width="1.6"/>`);
   if (it.id === 'pixelRipple') { let b = ''; for (const rr of [5, 9.5]) { const n = 8; for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2; b += `<rect x="${(14+Math.cos(a)*rr-1.5).toFixed(1)}" y="${(14+Math.sin(a)*rr-1.5).toFixed(1)}" width="3" height="3" fill="currentColor"/>`; } } return svg(b); }
