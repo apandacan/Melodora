@@ -1,6 +1,6 @@
 "use strict";
 // ================= Canvas / visuals =================
-const cvs = els.viz, ctx = cvs.getContext('2d');
+const cvs = els.viz; let ctx = cvs.getContext('2d');   // ctx is reassignable: render() briefly redirects it to offscreen layers so the scenery foreground can occlude particles
 let W = 0, H = 0, cx = 0, cy = 0, baseR = 180;
 function resize() {
   const dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -220,7 +220,7 @@ function ridge(base, amp, col, f1, f2, ph) {                      // one filled 
   ctx.lineTo(W, H + 2); ctx.closePath(); ctx.fill();
 }
 function drawMountains(layer) {                                   // hazy ranges (size unchanged — the reference look): far range behind particles, near range in front
-  if (layer === 'front') ridge(H * 0.84, H * 0.18, 'rgba(46,58,98,0.52)',   0.0055, 0.0130, 2.3);   // near, darker → foreground
+  if (layer === 'front') ridge(H * 0.84, H * 0.18, 'rgb(46,58,98)',          0.0055, 0.0130, 2.3);   // near range → foreground (opaque on its layer; FG_ALPHA fades it over the background)
   else                   ridge(H * 0.74, H * 0.22, 'rgba(92,110,160,0.28)', 0.0040, 0.0095, 0.6);   // far, hazy  → background
 }
 function pineRow(col, tw, hMin, hMax, step, phase) {              // a pine treeline, bases flush with the bottom edge (no float)
@@ -231,7 +231,7 @@ function pineRow(col, tw, hMin, hMax, step, phase) {              // a pine tree
   }
 }
 function drawForest(layer) {                                      // pine forest with depth: tall hazy treeline behind (≈ mountain scale), darker near fringe in front
-  if (layer === 'front') pineRow('rgba(16,44,28,0.6)',  Math.max(40, W / 22), H * 0.22, H * 0.33, 0.72, 1.7);   // near fringe (over particles)
+  if (layer === 'front') pineRow('rgb(16,44,28)',       Math.max(40, W / 22), H * 0.22, H * 0.33, 0.72, 1.7);   // near fringe → foreground (opaque on its layer; FG_ALPHA fades it over the background)
   else                   pineRow('rgba(40,78,52,0.38)', Math.max(52, W / 17), H * 0.34, H * 0.48, 0.9,  0.0);   // tall hazy treeline (behind particles)
 }
 function candyRow(sMin, sMax, gapMul, alpha) {                    // candies sized relative to H (scale with the scene like the mountains); spacing derived from size so they never overlap
@@ -255,10 +255,20 @@ function candyRow(sMin, sMax, gapMul, alpha) {                    // candies siz
   ctx.restore();
 }
 function drawCandyland(layer) {                                   // candy field with depth, sized like the mountains: small distant candies behind, big candies in front
-  if (layer === 'front') candyRow(0.07,  0.10,  2.5, 0.62);       // big candies — tallest lollipops reach ≈0.6H (over particles)
+  if (layer === 'front') candyRow(0.07,  0.10,  2.5, 1);          // big candies — opaque on the FG layer (FG_ALPHA fades it); tallest lollipops reach ≈0.6H
   else                   candyRow(0.035, 0.055, 2.4, 0.42);       // small distant candies (behind particles)
 }
+// Foreground display opacity per scene — the FG is drawn OPAQUE onto its own layer (so it fully masks particles), then composited at this alpha so it stays translucent over the background. undefined ⇒ scene has no foreground.
+const FG_ALPHA = { mountainsOverlay: 0.52, forestOverlay: 0.6, candylandOverlay: 0.62 };
+let pcv = null, pctx = null, fcv = null, fctx = null;                         // offscreen layers: particles + opaque foreground
+function ensureLayers() {                                                     // lazy-create / resize the offscreen layers to match the main canvas (incl. dpr transform)
+  if (!pcv) { pcv = document.createElement('canvas'); pctx = pcv.getContext('2d'); fcv = document.createElement('canvas'); fctx = fcv.getContext('2d'); }
+  if (pcv.width === cvs.width && pcv.height === cvs.height) return;
+  const dpr = W ? cvs.width / W : 1;
+  for (const [c, c2] of [[pcv, pctx], [fcv, fctx]]) { c.width = cvs.width; c.height = cvs.height; c2.setTransform(dpr, 0, 0, dpr, 0, 0); }
+}
 function render(now, sig) {
+  ensureLayers();
   ctx.clearRect(0, 0, W, H);
   renderOverlay('back');                                                      // scenery background (behind rave/ripples/ring/particles)
   renderRave(now, sig);
@@ -368,6 +378,8 @@ function render(now, sig) {
     }
     ctx.restore();
   }
+  const fgA = FG_ALPHA[overlayStyle], mainCtx = ctx;                          // foreground scene that should occlude particles?
+  if (fgA !== undefined) { pctx.clearRect(0, 0, W, H); ctx = pctx; }          // redirect particles onto their own layer so the foreground can mask them
   for (const p of particles) {
     const al = p.fly ? 0.8 : (p.life / p.max) * 0.85;
     ctx.fillStyle = rgbaP(al);
@@ -401,5 +413,10 @@ function render(now, sig) {
     }
     else { ctx.beginPath(); ctx.arc(X, Y, p.size, 0, Math.PI * 2); ctx.fill(); }
   }
-  renderOverlay('front');                                                     // scenery foreground (in front of particles)
+  if (fgA === undefined) return;                                              // no scenery foreground → particles already drawn straight to the main canvas
+  ctx = mainCtx;
+  fctx.clearRect(0, 0, W, H); ctx = fctx; renderOverlay('front'); ctx = mainCtx;   // opaque foreground silhouette → its own layer (doubles as the occlusion mask)
+  pctx.save(); pctx.globalCompositeOperation = 'destination-out'; pctx.drawImage(fcv, 0, 0, W, H); pctx.restore();   // erase particles wherever the foreground covers them (opaque to particles)
+  mainCtx.drawImage(pcv, 0, 0, W, H);                                         // composite the now-occluded particle layer over the scene
+  mainCtx.save(); mainCtx.globalAlpha = fgA; mainCtx.drawImage(fcv, 0, 0, W, H); mainCtx.restore();   // foreground, translucent over the background
 }
