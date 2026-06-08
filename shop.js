@@ -86,26 +86,33 @@ const SHOP = [
   { id: 'nyanParticle',  slot: 'particleShape', kind: 'skin', name: 'Nyan Cat',       cost: SKIN_COST, desc: 'Every spark is a tiny Nyan Cat trailing a rainbow.' },
   { id: 'duckParticle',  slot: 'particleShape', kind: 'skin', name: 'Rubber Ducky',   cost: SKIN_COST, desc: 'Squeaky yellow ducks bobbing off the ring.' },
   { id: 'pixelDuckParticle', slot: 'particleShape', kind: 'skin', name: 'Pixel Ducky', cost: SKIN_COST, desc: '8-bit rubber ducks.' },
+  { id: 'fireflyParticle', slot: 'particleShape', kind: 'skin', name: 'Fireflies',     cost: SKIN_COST, desc: 'Soft glowing sparks that twinkle in and out.' },
+  { id: 'cometParticle',   slot: 'particleShape', kind: 'skin', name: 'Comets',        cost: SKIN_COST, desc: 'Bright heads that streak a fading tail.' },
+  { id: 'twinkleParticle', slot: 'particleShape', kind: 'skin', name: 'Twinkle Stars', cost: SKIN_COST, desc: 'Stars that shimmer as they drift.' },
   { id: 'pixelCircle',   slot: 'circleShape',   kind: 'skin', name: 'Pixel Ring',      cost: SKIN_COST, desc: 'The reactive ring rebuilt from chunky pixels.' },
   { id: 'drumRing',      slot: 'circleShape',   kind: 'skin', name: 'Drum',            cost: SKIN_COST, desc: 'A taut drum skin with tuning lugs that bounces on the beat.' },
   { id: 'eqRing',        slot: 'circleShape',   kind: 'skin', name: 'Equalizer Bars',  milestone: 25,   desc: 'Bars around the ring that pump with the music.' },
-  { id: 'sharpRipple',   slot: 'rippleShape',   kind: 'skin', name: 'Sharp Ripples',   cost: SKIN_COST, desc: 'Jagged shockwave rings instead of soft water.' },
-  { id: 'pixelRipple',   slot: 'rippleShape',   kind: 'skin', name: 'Pixel Ripples',   cost: SKIN_COST, desc: 'Chunky stepped concentric rings.' },
+  // --- Ripple shapes removed for now (didn't trigger often enough); ripples follow the ring colour. Kept for possible revival: ---
+  // { id: 'sharpRipple',   slot: 'rippleShape',   kind: 'skin', name: 'Sharp Ripples',   cost: SKIN_COST, desc: 'Jagged shockwave rings instead of soft water.' },
+  // { id: 'pixelRipple',   slot: 'rippleShape',   kind: 'skin', name: 'Pixel Ripples',   cost: SKIN_COST, desc: 'Chunky stepped concentric rings.' },
   { id: 'pixelFont',     slot: 'font',          kind: 'skin', name: 'Pixel Type',      cost: SKIN_COST, desc: 'Retro pixel-art numerals on the timer.' },
   { id: 'cursiveFont',   slot: 'font',          kind: 'skin', name: 'Cursive',         cost: SKIN_COST, desc: 'Flowing Pacifico script numerals.' },
   { id: 'romanFont',     slot: 'font',          kind: 'skin', name: 'Roman',           cost: SKIN_COST, desc: 'Classical engraved Cinzel capitals.' },
   { id: 'digitalFont',   slot: 'font',          kind: 'skin', name: 'Digital Clock',   cost: SKIN_COST, desc: 'Seven-segment LCD timer face.' },
 ];
-for (const slot of ['particleColor', 'circleColor', 'rippleColor', 'strobeColor'])
+for (const slot of ['particleColor', 'circleColor', /* 'rippleColor' removed */ 'strobeColor'])
   for (const col of PALETTE) SHOP.push({ id: slot + '_' + col.id, slot, kind: 'color', name: col.name, cost: COLOR_COST, rgb: col.rgb });
-for (const slot of ['particleColor', 'circleColor', 'rippleColor', 'strobeColor'])   // animated rainbow — unlocked by playing
+for (const slot of ['particleColor', 'circleColor', /* 'rippleColor' removed */ 'strobeColor'])   // animated rainbow — unlocked by playing
   SHOP.push({ id: slot + '_rainbow', slot, kind: 'rainbow', name: 'Rainbow', milestone: 15, rgb: [255, 255, 255] });
 // Theme packs: one buy/equip applies a coordinated look across many slots + the background gradient
 const PACKS = [
-  { id: 'synthwavePack', kind: 'pack', name: 'Synthwave', cost: 3000, desc: 'Neon magenta & cyan over a purple dusk.', set: { circleShape: 'default', circleColor: 'circleColor_magenta', particleColor: 'particleColor_cyan', rippleColor: 'rippleColor_violet', strobeColor: 'strobeColor_magenta', font: 'digitalFont' }, bg: ['#2a1140', '#0a0610'] },
-  { id: 'forestPack',    kind: 'pack', name: 'Forest',    cost: 3000, desc: 'Calm greens over a deep woodland night.', set: { circleColor: 'circleColor_lime', particleColor: 'particleColor_mint', rippleColor: 'rippleColor_mint', strobeColor: 'strobeColor_lime' }, bg: ['#123420', '#050f09'] },
-  { id: 'monoPack',      kind: 'pack', name: 'Mono Pixel', cost: 2500, desc: 'All-pixel, no colour — clean & retro.', set: { particleShape: 'pixelParticle', circleShape: 'pixelCircle', rippleShape: 'pixelRipple', font: 'pixelFont', particleColor: 'default', circleColor: 'default', rippleColor: 'default', strobeColor: 'default' }, bg: ['#1b212e', '#090c13'] },
-  { id: 'prestigePack',  kind: 'pack', name: 'Prestige',  milestone: 50, desc: 'Gold on black — a 50-session flex.', set: { circleShape: 'drumRing', circleColor: 'circleColor_gold', particleColor: 'particleColor_gold', rippleColor: 'rippleColor_amber', strobeColor: 'strobeColor_gold', font: 'digitalFont' }, bg: ['#2a2208', '#0c0a03'] },
+  { id: 'synthwavePack', kind: 'pack', name: 'Synthwave', cost: 3000, desc: 'Neon magenta & cyan over a purple dusk.', set: { circleShape: 'default', circleColor: 'circleColor_magenta', particleColor: 'particleColor_cyan', strobeColor: 'strobeColor_magenta', font: 'digitalFont' }, bg: ['#2a1140', '#0a0610'] },
+  { id: 'forestPack',    kind: 'pack', name: 'Forest',    cost: 3000, desc: 'Calm greens over a deep woodland night.', set: { circleColor: 'circleColor_lime', particleColor: 'particleColor_mint', strobeColor: 'strobeColor_lime' }, bg: ['#123420', '#050f09'] },
+  { id: 'monoPack',      kind: 'pack', name: 'Mono Pixel', cost: 2500, desc: 'All-pixel, no colour — clean & retro.', set: { particleShape: 'pixelParticle', circleShape: 'pixelCircle', font: 'pixelFont', particleColor: 'default', circleColor: 'default', strobeColor: 'default' }, bg: ['#1b212e', '#090c13'] },
+  { id: 'firefliesPack', kind: 'pack', name: 'Firefly Night', cost: 3000, desc: 'Twinkling fireflies over a forest night.', set: { particleShape: 'fireflyParticle', particleColor: 'particleColor_gold', circleColor: 'circleColor_mint', strobeColor: 'strobeColor_lime' }, bg: ['#10241c', '#04080a'] },
+  { id: 'cometsPack',    kind: 'pack', name: 'Comet Storm', cost: 3000, desc: 'Icy comets streaking through deep space.', set: { particleShape: 'cometParticle', particleColor: 'particleColor_sky', circleColor: 'circleColor_cyan', strobeColor: 'strobeColor_cyan' }, bg: ['#0a1430', '#02030a'] },
+  { id: 'starsPack',     kind: 'pack', name: 'Starfield',   cost: 3000, desc: 'A sky of softly twinkling stars.', set: { particleShape: 'twinkleParticle', particleColor: 'particleColor_gold', circleColor: 'circleColor_violet', strobeColor: 'strobeColor_violet' }, bg: ['#0c1430', '#03040c'] },
+  { id: 'prestigePack',  kind: 'pack', name: 'Prestige',  milestone: 50, desc: 'Gold on black — a 50-session flex.', set: { circleShape: 'drumRing', circleColor: 'circleColor_gold', particleColor: 'particleColor_gold', strobeColor: 'strobeColor_gold', font: 'digitalFont' }, bg: ['#2a2208', '#0c0a03'] },
 ];
 for (const p of PACKS) SHOP.push(p);
 // shop layout: each section may carry a skin slot and/or a colour slot
@@ -113,7 +120,7 @@ const SECTIONS = [
   { label: 'Theme Packs',     packs: true },
   { label: 'Particles',       skinSlot: 'particleShape', colorSlot: 'particleColor' },
   { label: 'Visualizer ring', skinSlot: 'circleShape',   colorSlot: 'circleColor' },
-  { label: 'Ripples',         skinSlot: 'rippleShape',   colorSlot: 'rippleColor' },
+  // { label: 'Ripples',      skinSlot: 'rippleShape',   colorSlot: 'rippleColor' },   // removed — ripples follow the ring colour now
   { label: 'Font',            skinSlot: 'font' },
   { label: 'Strobe lights',   colorSlot: 'strobeColor' },
 ];
@@ -157,7 +164,10 @@ function previewHTML(it) {
   if (it.id === 'nyanParticle') return `<div class="nyan-thumb"></div>`;   // the real sprite, cropped to the nyan band
   if (it.id === 'duckParticle') return svg(`<ellipse cx="12" cy="18" rx="9" ry="6" fill="#ffd23d"/><circle cx="18" cy="11" r="5" fill="#ffd23d"/><polygon points="22,10 27,11.5 22,13" fill="#ff921a"/><circle cx="19" cy="10" r="1.2" fill="#1c1c1c"/>`);
   if (it.id === 'pixelDuckParticle') { const u = 2.6, ox = 2.3, oy = 3.6; let b = ''; for (let r = 0; r < DUCK_PX.length; r++) for (let c = 0; c < 9; c++) { const ch = DUCK_PX[r][c]; if (ch === '.') continue; const col = ch === 'O' ? '#ff921a' : ch === 'E' ? '#1c1c1c' : '#ffd23d'; b += `<rect x="${(ox+c*u).toFixed(1)}" y="${(oy+r*u).toFixed(1)}" width="${u}" height="${u}" fill="${col}"/>`; } return svg(b); }
-  // ripple shapes
+  if (it.id === 'fireflyParticle') return svg(`<circle cx="14" cy="14" r="9.5" fill="currentColor" opacity=".16"/><circle cx="14" cy="14" r="5.5" fill="currentColor" opacity=".5"/><circle cx="14" cy="14" r="2.6" fill="currentColor"/>`);
+  if (it.id === 'cometParticle') return svg(`<polygon points="18,11 18,17 3,14" fill="currentColor" opacity=".45"/><circle cx="19" cy="14" r="4" fill="currentColor"/>`);
+  if (it.id === 'twinkleParticle') { const p = []; for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? 4 : 9.5; p.push(`${(14+Math.cos(a)*rr).toFixed(1)},${(14+Math.sin(a)*rr).toFixed(1)}`); } return svg(`<polygon points="${p.join(' ')}" fill="currentColor"/>`); }
+  // ripple shapes (removed from shop; previews kept harmlessly for revival)
   if (it.id === 'sharpRipple') return svg(`<polygon points="14,3 17,11 25,14 17,17 14,25 11,17 3,14 11,11" fill="none" stroke="currentColor" stroke-width="1.6"/>`);
   if (it.id === 'pixelRipple') { let b = ''; for (const rr of [5, 9.5]) { const n = 8; for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2; b += `<rect x="${(14+Math.cos(a)*rr-1.5).toFixed(1)}" y="${(14+Math.sin(a)*rr-1.5).toFixed(1)}" width="3" height="3" fill="currentColor"/>`; } } return svg(b); }
   // generic fallbacks
@@ -200,7 +210,7 @@ function colorRowHTML(slot) {
 }
 function packPreviewHTML(it) {
   let chips = it.bg ? `<span style="background:linear-gradient(${it.bg[0]},${it.bg[1]})"></span>` : '';
-  for (const s of ['circleColor', 'particleColor', 'rippleColor', 'strobeColor']) {
+  for (const s of ['circleColor', 'particleColor', 'strobeColor']) {
     const id = it.set[s]; if (!id || id === 'default') continue;
     const ci = itemById(id); if (ci && ci.rgb) chips += `<span style="background:rgb(${ci.rgb[0]},${ci.rgb[1]},${ci.rgb[2]})"></span>`;
   }

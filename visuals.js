@@ -63,7 +63,7 @@ function spawnParticle(sig, m) {
   let spd = (0.05 + 0.30 * sig.intensity) * (0.6 + 0.9 * Math.random()) * (0.7 + 0.6 * m);
   if (fly) spd = spd * 2.0 + 0.22;                 // strong initial burst; it eases down as it travels (see updateParticles)
   const r0 = baseR + 4 + (0.1 + 0.4 * sig.level) * baseR * 0.2, life = 500 + 1000 * Math.random();
-  particles.push({ px: Math.cos(a) * r0, py: Math.sin(a) * r0, vx: Math.cos(a) * spd, vy: Math.sin(a) * spd, life, max: life, size: (1 + 2.6 * Math.random()) * (0.8 + 0.5 * m), fly });
+  particles.push({ px: Math.cos(a) * r0, py: Math.sin(a) * r0, vx: Math.cos(a) * spd, vy: Math.sin(a) * spd, life, max: life, size: (1 + 2.6 * Math.random()) * (0.8 + 0.5 * m), fly, seed: Math.random() * Math.PI * 2 });
 }
 let spawnAcc = 0, lastBurst = 0;
 function maybeSpawnParticles(sig, dt, now) {
@@ -209,10 +209,10 @@ function render(now, sig) {
   ctx.clearRect(0, 0, W, H);
   renderRave(now, sig);
   const c = modeColor();
-  const circRGB = resolveColor('circleColor', now) || c, partRGB = resolveColor('particleColor', now) || c, ripRGB = resolveColor('rippleColor', now) || c;
+  const circRGB = resolveColor('circleColor', now) || c, partRGB = resolveColor('particleColor', now) || c;
   const rgba  = a => `rgba(${circRGB[0]},${circRGB[1]},${circRGB[2]},${a})`;   // ring
   const rgbaP = a => `rgba(${partRGB[0]},${partRGB[1]},${partRGB[2]},${a})`;   // particles
-  const rgbaR = a => `rgba(${ripRGB[0]},${ripRGB[1]},${ripRGB[2]},${a})`;      // ripples (own colour slot; falls back to mode colour)
+  const rgbaR = rgba;                                                          // ripples now match the ring colour (ripple customization removed)
   // water ripples: soft undulating concentric crests (style: default smooth / sharp jagged / pixel stepped)
   const PXR = 5;
   for (const rp of ripples) {
@@ -329,6 +329,22 @@ function render(now, sig) {
     }
     else if (particleStyle === 'duckParticle') { ctx.globalAlpha = al; drawDuck(X, Y, p.size * 3.5, p.vx < 0); ctx.globalAlpha = 1; }
     else if (particleStyle === 'pixelDuckParticle') { ctx.globalAlpha = al; drawDuckPixel(X, Y, p.size, p.vx < 0); ctx.globalAlpha = 1; }
+    else if (particleStyle === 'fireflyParticle') {              // glowing dot that twinkles in & out
+      const tw = 0.18 + 0.82 * Math.abs(Math.sin(now * 0.006 + (p.seed || 0)));
+      ctx.fillStyle = rgbaP(al * tw); ctx.shadowBlur = p.size * 3.5; ctx.shadowColor = rgbaP(al * tw * 0.8);
+      ctx.beginPath(); ctx.arc(X, Y, p.size * 1.15, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
+    }
+    else if (particleStyle === 'cometParticle') {               // bright head + fading tail behind its motion
+      const sp = Math.hypot(p.vx, p.vy) || 1, tx = -p.vx / sp, ty = -p.vy / sp, len = p.size * 9;
+      const grad = ctx.createLinearGradient(X, Y, X + tx * len, Y + ty * len);
+      grad.addColorStop(0, rgbaP(al)); grad.addColorStop(1, rgbaP(0));
+      ctx.strokeStyle = grad; ctx.lineWidth = p.size * 1.3; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(X, Y); ctx.lineTo(X + tx * len, Y + ty * len); ctx.stroke();
+      ctx.fillStyle = rgbaP(al); ctx.beginPath(); ctx.arc(X, Y, p.size * 0.95, 0, Math.PI * 2); ctx.fill();
+    }
+    else if (particleStyle === 'twinkleParticle') {            // star that shimmers
+      ctx.fillStyle = rgbaP(al * (0.25 + 0.75 * Math.abs(Math.sin(now * 0.007 + (p.seed || 0))))); drawStar(X, Y, p.size * 2.1);
+    }
     else { ctx.beginPath(); ctx.arc(X, Y, p.size, 0, Math.PI * 2); ctx.fill(); }
   }
 }
