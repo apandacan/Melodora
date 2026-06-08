@@ -19,6 +19,7 @@ function loadGame() {
     rippleShape:   e.rippleShape   || 'default',                      rippleColor:  e.rippleColor   || 'default',
     font:          e.font || 'default',                               strobeColor:  e.strobeColor   || 'default',
     theme:         e.theme || 'default',                              background:   e.background    || 'default',
+    overlay:       e.overlay || 'default',
   };
   for (const s in g.equipped)                                          // never keep an unowned item equipped (milestones count as owned)
     if (g.equipped[s] !== 'default' && !isOwned(g.equipped[s], g)) g.equipped[s] = 'default';
@@ -64,7 +65,7 @@ function completeFocusSession() {
 
 // ---- Shop / Customize: spend coins on cosmetic skins (pixel art) + colours ----
 let pixelParticles = false, pixelCircle = false;   // renderer flags, derived from equipped skins
-let circleStyle = 'default', particleStyle = 'default', rippleStyle = 'default';   // shape variants per shape slot
+let circleStyle = 'default', particleStyle = 'default', rippleStyle = 'default', overlayStyle = 'default';   // shape/scene variants per slot
 const SKIN_COST = 1500, COLOR_COST = 500;
 // 5-colour palette shared by every colour slot (opt-in accents; monochrome stays the default)
 const PALETTE = [
@@ -99,6 +100,9 @@ const SHOP = [
   { id: 'cursiveFont',   slot: 'font',          kind: 'skin', name: 'Cursive',         cost: SKIN_COST, desc: 'Flowing Pacifico script numerals.' },
   { id: 'romanFont',     slot: 'font',          kind: 'skin', name: 'Roman',           cost: SKIN_COST, desc: 'Classical engraved Cinzel capitals.' },
   { id: 'digitalFont',   slot: 'font',          kind: 'skin', name: 'Digital Clock',   cost: SKIN_COST, desc: 'Seven-segment LCD timer face.' },
+  { id: 'mountainsOverlay', slot: 'overlay', kind: 'skin', name: 'Mountains', cost: SKIN_COST, desc: 'Hazy mountain ranges along the horizon — great with Comets.' },
+  { id: 'forestOverlay',    slot: 'overlay', kind: 'skin', name: 'Forest',    cost: SKIN_COST, desc: 'A silhouetted pine treeline — great with Fireflies.' },
+  { id: 'candylandOverlay', slot: 'overlay', kind: 'skin', name: 'Candyland', cost: SKIN_COST, desc: 'Lollipops & gumdrops — great with Nyan Cat.' },
 ];
 for (const slot of ['particleColor', 'circleColor', /* 'rippleColor' removed */ 'strobeColor'])
   for (const col of PALETTE) SHOP.push({ id: slot + '_' + col.id, slot, kind: 'color', name: col.name, cost: COLOR_COST, rgb: col.rgb });
@@ -109,9 +113,10 @@ const PACKS = [
   { id: 'synthwavePack', kind: 'pack', name: 'Synthwave', cost: 3000, desc: 'Neon magenta & cyan over a purple dusk.', set: { circleShape: 'default', circleColor: 'circleColor_magenta', particleColor: 'particleColor_cyan', strobeColor: 'strobeColor_magenta', font: 'digitalFont' }, bg: ['#2a1140', '#0a0610'] },
   { id: 'forestPack',    kind: 'pack', name: 'Forest',    cost: 3000, desc: 'Calm greens over a deep woodland night.', set: { circleColor: 'circleColor_lime', particleColor: 'particleColor_mint', strobeColor: 'strobeColor_lime' }, bg: ['#123420', '#050f09'] },
   { id: 'monoPack',      kind: 'pack', name: 'Mono Pixel', cost: 2500, desc: 'All-pixel, no colour — clean & retro.', set: { particleShape: 'pixelParticle', circleShape: 'pixelCircle', font: 'pixelFont', particleColor: 'default', circleColor: 'default', strobeColor: 'default' }, bg: ['#1b212e', '#090c13'] },
-  { id: 'firefliesPack', kind: 'pack', name: 'Firefly Night', cost: 3000, desc: 'Twinkling fireflies over a forest night.', set: { particleShape: 'fireflyParticle', particleColor: 'particleColor_gold', circleColor: 'circleColor_mint', strobeColor: 'strobeColor_lime' }, bg: ['#10241c', '#04080a'] },
-  { id: 'cometsPack',    kind: 'pack', name: 'Comet Storm', cost: 3000, desc: 'Icy comets streaking through deep space.', set: { particleShape: 'cometParticle', particleColor: 'particleColor_sky', circleColor: 'circleColor_cyan', strobeColor: 'strobeColor_cyan' }, bg: ['#0a1430', '#02030a'] },
-  { id: 'starsPack',     kind: 'pack', name: 'Starfield',   cost: 3000, desc: 'A sky of softly twinkling stars.', set: { particleShape: 'twinkleParticle', particleColor: 'particleColor_gold', circleColor: 'circleColor_violet', strobeColor: 'strobeColor_violet' }, bg: ['#0c1430', '#03040c'] },
+  { id: 'firefliesPack', kind: 'pack', name: 'Firefly Night', cost: 3000, desc: 'Twinkling fireflies over a forest night.', set: { particleShape: 'fireflyParticle', particleColor: 'particleColor_gold', circleColor: 'circleColor_mint', strobeColor: 'strobeColor_lime', overlay: 'forestOverlay' }, bg: ['#10241c', '#04080a'] },
+  { id: 'cometsPack',    kind: 'pack', name: 'Comet Storm', cost: 3000, desc: 'Icy comets streaking over the mountains.', set: { particleShape: 'cometParticle', particleColor: 'particleColor_sky', circleColor: 'circleColor_cyan', strobeColor: 'strobeColor_cyan', overlay: 'mountainsOverlay' }, bg: ['#0a1430', '#02030a'] },
+  { id: 'starsPack',     kind: 'pack', name: 'Starfield',   cost: 3000, desc: 'A sky of softly twinkling stars.', set: { particleShape: 'twinkleParticle', particleColor: 'particleColor_gold', circleColor: 'circleColor_violet', strobeColor: 'strobeColor_violet', overlay: 'mountainsOverlay' }, bg: ['#0c1430', '#03040c'] },
+  { id: 'candylandPack', kind: 'pack', name: 'Candyland',   cost: 3000, desc: 'Nyan Cat over a candy wonderland.', set: { particleShape: 'nyanParticle', overlay: 'candylandOverlay', circleColor: 'circleColor_rose', strobeColor: 'strobeColor_magenta' }, bg: ['#3a1430', '#140510'] },
   { id: 'prestigePack',  kind: 'pack', name: 'Prestige',  milestone: 50, desc: 'Gold on black — a 50-session flex.', set: { circleShape: 'drumRing', circleColor: 'circleColor_gold', particleColor: 'particleColor_gold', strobeColor: 'strobeColor_gold', font: 'digitalFont' }, bg: ['#2a2208', '#0c0a03'] },
 ];
 for (const p of PACKS) SHOP.push(p);
@@ -123,6 +128,7 @@ const SECTIONS = [
   // { label: 'Ripples',      skinSlot: 'rippleShape',   colorSlot: 'rippleColor' },   // removed — ripples follow the ring colour now
   { label: 'Font',            skinSlot: 'font' },
   { label: 'Strobe lights',   colorSlot: 'strobeColor' },
+  { label: 'Scenery',         skinSlot: 'overlay' },
 ];
 const itemById = id => SHOP.find(s => s.id === id);
 // milestone / ownership helpers (used by loadGame's equip guard — defined before `let game` runs below)
@@ -142,6 +148,7 @@ function applyCosmetics() {
   circleStyle    = game.equipped.circleShape;        // 'default' | 'pixelCircle' | 'drumRing' | 'eqRing'
   particleStyle  = game.equipped.particleShape;      // 'default' | 'pixelParticle' | 'starParticle' | 'noteParticle' | 'nyanParticle'
   rippleStyle    = game.equipped.rippleShape;        // 'default' | 'sharpRipple' | 'pixelRipple'
+  overlayStyle   = game.equipped.overlay;            // 'default' | 'mountainsOverlay' | 'forestOverlay' | 'candylandOverlay'
   applyBodyState();                                   // toggles the body.font-* class
   lastFitLen = -1; fitTime(els.time.textContent);     // font metrics changed → re-measure
   const FF = { pixelFont: "'Press Start 2P'", cursiveFont: 'Pacifico', romanFont: 'Cinzel', digitalFont: 'DSEG7' }[game.equipped.font];
@@ -167,6 +174,10 @@ function previewHTML(it) {
   if (it.id === 'fireflyParticle') return svg(`<circle cx="14" cy="14" r="9.5" fill="currentColor" opacity=".16"/><circle cx="14" cy="14" r="5.5" fill="currentColor" opacity=".5"/><circle cx="14" cy="14" r="2.6" fill="currentColor"/>`);
   if (it.id === 'cometParticle') return svg(`<polygon points="18,11 18,17 3,14" fill="currentColor" opacity=".45"/><circle cx="19" cy="14" r="4" fill="currentColor"/>`);
   if (it.id === 'twinkleParticle') { const p = []; for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? 4 : 9.5; p.push(`${(14+Math.cos(a)*rr).toFixed(1)},${(14+Math.sin(a)*rr).toFixed(1)}`); } return svg(`<polygon points="${p.join(' ')}" fill="currentColor"/>`); }
+  // scenery overlays (own thematic colours)
+  if (it.id === 'mountainsOverlay') return svg(`<polygon points="0,27 8,11 13,18 20,7 28,27" fill="#5a6ea0"/><polygon points="0,28 6,18 12,23 18,15 24,22 28,18 28,28" fill="#2c3a62"/>`);
+  if (it.id === 'forestOverlay') return svg(`<g fill="#1f5436"><polygon points="5,26 1,26 3,15"/><polygon points="14,27 7,27 10.5,12"/><polygon points="22,26 16,26 19,15"/><polygon points="28,27 22,27 25,16"/></g>`);
+  if (it.id === 'candylandOverlay') return svg(`<rect x="7.2" y="14" width="1.6" height="13" fill="#fff"/><circle cx="8" cy="11" r="5" fill="#ff9ecb"/><path d="M16 27 a5.5 5.5 0 0 1 11 0 z" fill="#a8e6ff"/>`);
   // ripple shapes (removed from shop; previews kept harmlessly for revival)
   if (it.id === 'sharpRipple') return svg(`<polygon points="14,3 17,11 25,14 17,17 14,25 11,17 3,14 11,11" fill="none" stroke="currentColor" stroke-width="1.6"/>`);
   if (it.id === 'pixelRipple') { let b = ''; for (const rr of [5, 9.5]) { const n = 8; for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2; b += `<rect x="${(14+Math.cos(a)*rr-1.5).toFixed(1)}" y="${(14+Math.sin(a)*rr-1.5).toFixed(1)}" width="3" height="3" fill="currentColor"/>`; } } return svg(b); }
