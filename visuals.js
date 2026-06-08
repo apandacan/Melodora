@@ -176,7 +176,7 @@ function drawNote(x, y, s) {
 }
 function drawNyan(x, y, s, ang) {                                  // tiny Nyan Cat: rainbow trail + pop-tart cat (fixed colours)
   const u = Math.max(2.4, s * 1.5);
-  ctx.save(); ctx.translate(x, y); ctx.rotate(ang);
+  ctx.save(); ctx.translate(x, y); ctx.rotate(ang); if (Math.cos(ang) < 0) ctx.scale(1, -1);   // flip upright when flying leftish (else 180° rotation = upside down)
   const rb = ['#ff2d2d', '#ff9b1f', '#ffe92b', '#3fe04a', '#2f8bff', '#9b4dff'], bw = u * 0.5;
   for (let i = 0; i < 6; i++) { ctx.fillStyle = rb[i]; ctx.fillRect(-u * 4, -u * 1.5 + i * bw, u * 2.6, bw + 0.5); }   // rainbow trail (behind the head)
   ctx.fillStyle = '#9aa0a6'; ctx.fillRect(-u * 1.5, -u * 1.3, u * 2.7, u * 2.6);                                       // grey body
@@ -205,57 +205,62 @@ function drawDuckPixel(x, y, s, flip) {                            // 8-bit rubb
   }
   ctx.restore();
 }
-// ---- Scenery overlays (cute scene drawn as the BACK layer, behind ripples/ring/particles/rave) ----
-function renderOverlay() {
-  if (overlayStyle === 'mountainsOverlay') drawMountains();
-  else if (overlayStyle === 'forestOverlay') drawForest();
-  else if (overlayStyle === 'candylandOverlay') drawCandyland();
+// ---- Scenery overlays: each scene has a BACK layer (behind particles) + a FRONT layer (over particles) for depth ----
+function renderOverlay(layer) {                                   // layer: 'back' (behind particles/ring) | 'front' (in front of particles)
+  if (overlayStyle === 'mountainsOverlay') drawMountains(layer);
+  else if (overlayStyle === 'forestOverlay') drawForest(layer);
+  else if (overlayStyle === 'candylandOverlay') drawCandyland(layer);
 }
-function drawMountains() {                                         // layered hazy ranges along the horizon (deterministic, no flicker)
-  const layers = [
-    { base: H * 0.74, amp: H * 0.22, col: 'rgba(92,110,160,0.28)', f1: 0.0040, f2: 0.0095, ph: 0.6 },
-    { base: H * 0.84, amp: H * 0.18, col: 'rgba(46,58,98,0.52)',   f1: 0.0055, f2: 0.0130, ph: 2.3 },
-  ];
-  for (const L of layers) {
-    ctx.fillStyle = L.col; ctx.beginPath(); ctx.moveTo(0, H + 2);
-    for (let x = 0; x <= W; x += 10) {
-      const m = Math.abs(Math.sin(x * L.f1 + L.ph)) * 0.72 + Math.abs(Math.sin(x * L.f2 + L.ph * 1.7)) * 0.28;
-      ctx.lineTo(x, L.base - m * L.amp);
-    }
-    ctx.lineTo(W, H + 2); ctx.closePath(); ctx.fill();
+function ridge(base, amp, col, f1, f2, ph) {                      // one filled mountain range, silhouette down to the bottom edge
+  ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(0, H + 2);
+  for (let x = 0; x <= W; x += 10) {
+    const m = Math.abs(Math.sin(x * f1 + ph)) * 0.72 + Math.abs(Math.sin(x * f2 + ph * 1.7)) * 0.28;
+    ctx.lineTo(x, base - m * amp);
+  }
+  ctx.lineTo(W, H + 2); ctx.closePath(); ctx.fill();
+}
+function drawMountains(layer) {                                   // hazy ranges (size unchanged — the reference look): far range behind particles, near range in front
+  if (layer === 'front') ridge(H * 0.84, H * 0.18, 'rgba(46,58,98,0.52)',   0.0055, 0.0130, 2.3);   // near, darker → foreground
+  else                   ridge(H * 0.74, H * 0.22, 'rgba(92,110,160,0.28)', 0.0040, 0.0095, 0.6);   // far, hazy  → background
+}
+function pineRow(col, tw, hMin, hMax, step, phase) {              // a pine treeline, bases flush with the bottom edge (no float)
+  ctx.fillStyle = col;
+  for (let i = 0, x = -tw * 0.5; x < W + tw; x += tw * step, i++) {
+    const h = hMin + (hMax - hMin) * Math.abs(Math.sin(i * 1.9 + phase)), w = tw * (0.9 + 0.2 * Math.abs(Math.sin(i * 2.3 + phase)));
+    for (let k = 0; k < 3; k++) { const ty = H + 2 - h * k * 0.3, w2 = w * (1 - k * 0.22); ctx.beginPath(); ctx.moveTo(x, ty - h * 0.44); ctx.lineTo(x - w2 / 2, ty); ctx.lineTo(x + w2 / 2, ty); ctx.closePath(); ctx.fill(); }
   }
 }
-function drawForest() {                                            // a silhouetted pine treeline
-  ctx.fillStyle = 'rgba(22,58,36,0.55)';
-  const ground = H * 0.94, tw = Math.max(34, W / 26);
-  for (let i = 0, x = -tw * 0.5; x < W + tw; x += tw * 0.72, i++) {
-    const h = H * (0.13 + 0.05 * Math.abs(Math.sin(i * 1.9 + 0.5))), w = tw * (0.85 + 0.2 * Math.abs(Math.sin(i * 2.3)));
-    for (let k = 0; k < 3; k++) { const ty = ground - h * (0.34 + k * 0.27), w2 = w * (1 - k * 0.2); ctx.beginPath(); ctx.moveTo(x, ty - h * 0.36); ctx.lineTo(x - w2 / 2, ty); ctx.lineTo(x + w2 / 2, ty); ctx.closePath(); ctx.fill(); }
-  }
+function drawForest(layer) {                                      // pine forest with depth: tall hazy treeline behind (≈ mountain scale), darker near fringe in front
+  if (layer === 'front') pineRow('rgba(16,44,28,0.6)',  Math.max(40, W / 22), H * 0.22, H * 0.33, 0.72, 1.7);   // near fringe (over particles)
+  else                   pineRow('rgba(40,78,52,0.38)', Math.max(52, W / 17), H * 0.34, H * 0.48, 0.9,  0.0);   // tall hazy treeline (behind particles)
 }
-function drawCandyland() {                                         // lollipops / gumdrops / candy canes along the bottom
-  const ground = H * 0.9, sp = Math.max(72, W / 12), cols = ['#ff9ecb', '#fff2a8', '#a8e6ff', '#c8a8ff', '#ffc1d6'];
-  ctx.save(); ctx.globalAlpha = 0.55; ctx.lineCap = 'round';
-  for (let i = 0, x = sp * 0.6; x < W; x += sp, i++) {
-    const c = cols[i % cols.length], s = sp * (0.16 + 0.04 * Math.abs(Math.sin(i * 1.3))), kind = i % 3;
-    if (kind === 0) {                                              // lollipop
+function candyRow(sMin, sMax, gapMul, alpha) {                    // candies sized relative to H (scale with the scene like the mountains); spacing derived from size so they never overlap
+  const cols = ['#ff9ecb', '#fff2a8', '#a8e6ff', '#c8a8ff', '#ffc1d6'], g = H, sp = H * sMax * gapMul;
+  ctx.save(); ctx.globalAlpha = alpha; ctx.lineCap = 'round';
+  for (let i = 0, x = sp * 0.55; x < W + sp; x += sp, i++) {
+    const c = cols[i % cols.length], s = H * (sMin + (sMax - sMin) * Math.abs(Math.sin(i * 1.3))), kind = i % 3;
+    if (kind === 0) {                                             // lollipop
       ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = s * 0.2;
-      ctx.beginPath(); ctx.moveTo(x, ground); ctx.lineTo(x, ground - s * 2.6); ctx.stroke();
-      ctx.fillStyle = c; ctx.beginPath(); ctx.arc(x, ground - s * 3, s, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(x, g); ctx.lineTo(x, g - s * 2.6); ctx.stroke();
+      ctx.fillStyle = c; ctx.beginPath(); ctx.arc(x, g - s * 3, s, 0, Math.PI * 2); ctx.fill();
       ctx.strokeStyle = 'rgba(255,255,255,0.75)'; ctx.lineWidth = s * 0.3;
-      ctx.beginPath(); ctx.arc(x, ground - s * 3, s * 0.5, 0.5, 4.2); ctx.stroke();
-    } else if (kind === 1) {                                       // gumdrop
-      ctx.fillStyle = c; ctx.beginPath(); ctx.arc(x, ground, s * 1.15, Math.PI, 0); ctx.fill();
-    } else {                                                       // candy cane
+      ctx.beginPath(); ctx.arc(x, g - s * 3, s * 0.5, 0.5, 4.2); ctx.stroke();
+    } else if (kind === 1) {                                      // gumdrop
+      ctx.fillStyle = c; ctx.beginPath(); ctx.arc(x, g, s * 1.15, Math.PI, 0); ctx.fill();
+    } else {                                                      // candy cane
       ctx.strokeStyle = c; ctx.lineWidth = s * 0.5;
-      ctx.beginPath(); ctx.moveTo(x, ground); ctx.lineTo(x, ground - s * 2); ctx.arc(x + s * 0.6, ground - s * 2, s * 0.6, Math.PI, 0); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x, g); ctx.lineTo(x, g - s * 2); ctx.arc(x + s * 0.6, g - s * 2, s * 0.6, Math.PI, 0); ctx.stroke();
     }
   }
   ctx.restore();
 }
+function drawCandyland(layer) {                                   // candy field with depth, sized like the mountains: small distant candies behind, big candies in front
+  if (layer === 'front') candyRow(0.07,  0.10,  2.5, 0.62);       // big candies — tallest lollipops reach ≈0.6H (over particles)
+  else                   candyRow(0.035, 0.055, 2.4, 0.42);       // small distant candies (behind particles)
+}
 function render(now, sig) {
   ctx.clearRect(0, 0, W, H);
-  renderOverlay();
+  renderOverlay('back');                                                      // scenery background (behind rave/ripples/ring/particles)
   renderRave(now, sig);
   const c = modeColor();
   const circRGB = resolveColor('circleColor', now) || c, partRGB = resolveColor('particleColor', now) || c;
@@ -372,7 +377,7 @@ function render(now, sig) {
     else if (particleStyle === 'noteParticle') drawNote(X, Y, p.size * 1.9);
     else if (particleStyle === 'nyanParticle') {
       if (nyanImg.complete && nyanImg.naturalWidth) {           // real sprite, cropped to the nyan band, facing its flight direction
-        ctx.save(); ctx.globalAlpha = al; ctx.translate(X, Y); ctx.rotate(Math.atan2(p.vy, p.vx));
+        ctx.save(); ctx.globalAlpha = al; ctx.translate(X, Y); ctx.rotate(Math.atan2(p.vy, p.vx)); if (p.vx < 0) ctx.scale(1, -1);   // flip upright when flying leftish (else 180° rotation = upside down)
         const dw = p.size * 13, dh = dw * 0.345; ctx.drawImage(nyanImg, 0, 412, 922, 318, -dw / 2, -dh / 2, dw, dh); ctx.restore();
       } else { ctx.globalAlpha = al; drawNyan(X, Y, p.size, Math.atan2(p.vy, p.vx)); ctx.globalAlpha = 1; }   // fallback until it loads
     }
@@ -396,4 +401,5 @@ function render(now, sig) {
     }
     else { ctx.beginPath(); ctx.arc(X, Y, p.size, 0, Math.PI * 2); ctx.fill(); }
   }
+  renderOverlay('front');                                                     // scenery foreground (in front of particles)
 }
