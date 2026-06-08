@@ -8,8 +8,6 @@ Features:
 - Transition chimes and "rave lights" on intense parts of a song
 - A coin-earning **Customize** shop: particle / ring / ripple shapes, colors (incl. an animated rainbow), display fonts, and premium theme packs — unlocked with coins or by reaching session milestones
 
-**Live:** https://USERNAME.github.io/REPO/  <!-- update after enabling GitHub Pages -->
-
 ## Run locally
 No build step — it's plain static files. Serve the folder over HTTP (use `localhost`, **not** `file://`, so the visualizer's tab-audio capture works in a secure context):
 
